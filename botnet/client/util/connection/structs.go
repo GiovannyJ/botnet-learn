@@ -10,17 +10,21 @@ type Client struct {
 	Conn net.Conn
 	OS string
 	Mu sync.Mutex
-	IsActive bool
-	Daddy string
 }
 
 type Command struct{
 	CMD string
 	Action string
+	FileInfo File
 	Response *Response
 }
 
 type Response struct{
-	Data []any //! CHANGE LATER
+	Data []byte
 	Result bool
+}
+
+type File struct{
+	Name string
+	Size int64
 }

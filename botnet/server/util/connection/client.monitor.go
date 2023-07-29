@@ -5,7 +5,9 @@ import (
 	h "server/util/header"
 )
 
-
+/*
+* METHODS TO MONITOR THE STATUS OF CLIENTS
+*/
 
 /*
 * Go Routine that Checks if a client is disconnected
@@ -14,12 +16,16 @@ import (
 func (s *Server) ClientStatus() {
 	for {
 		disconnectedClient := <-s.DisconnectedClients
-		fmt.Println(h.E, "Client ID", disconnectedClient.ID, "Disconnected")
 		s.removeClientByID(disconnectedClient.ID)
-		s.resetActive(disconnectedClient.ID)
+		
+		if disconnectedClient.ID == s.ActiveClient{
+			s.resetActive(disconnectedClient.ID)
+		}
 	}
 }
 
+
+//*resets the active state to 0 if the client was the active client
 func (s *Server) resetActive(clientID int64){
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -29,16 +35,13 @@ func (s *Server) resetActive(clientID int64){
 		itemMap[item.ID] = true
 	}
 	
-	
 	if !itemMap[clientID]{
 		fmt.Println(h.I, "Active Client has been reset to 0 (default)")
 		s.ActiveClient = 0
 	}
 }
 
-/*
-*removes client from list
-*/
+//*removes client from list
 func (s *Server) removeClientByID(clientID int64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -54,9 +57,7 @@ func (s *Server) removeClientByID(clientID int64) {
 	s.Clients = updatedClients
 }
 
-/*
-* Go Routine to update channel when client disconnects
-*/
+//* Go Routine to update channel when client disconnects
 func (s *Server) HandleClientDisconnection(client *Client) {
 	buffer := make([]byte, 1)
 	_, err := client.Conn.Read(buffer)
@@ -64,4 +65,3 @@ func (s *Server) HandleClientDisconnection(client *Client) {
 		s.DisconnectedClients <- client
 	}
 }
-

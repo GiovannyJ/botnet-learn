@@ -5,10 +5,6 @@ import (
 	"sync"
 )
 
-type Request struct{}
-
-type Response struct{}
-
 type Server struct {
 	Activeconns         int
 	Clients             []*Client 
@@ -21,4 +17,5 @@ type Server struct {
 type Client struct {
 	ID      int64
 	Conn net.Conn
+	Status bool
 }

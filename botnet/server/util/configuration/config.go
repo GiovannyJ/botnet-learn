@@ -1,6 +1,5 @@
 package configuration
 
-
 import (
 	"log"
 	"os"
@@ -12,7 +11,6 @@ import (
 */
 
 /*
-*TESTED WORKING
 loads .env file
 returns .env variable
 */

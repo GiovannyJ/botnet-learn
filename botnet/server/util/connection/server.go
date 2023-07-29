@@ -9,11 +9,11 @@ import (
 	conf "server/util/configuration"
 	h "server/util/header"
 	"strings"
-	// "time"
+	"strconv"
 )
 
 /*
-*Start TCP connection
+* Start TCP connection
 * This file will be where the server hosts it main connection
 * hosts on localhost:PORT
 */
@@ -30,7 +30,7 @@ var idGen = NewUniqueIDGenerator()
 
 
 /*
-*Starting the server Instance
+* Starting the server Instance
 */
 func (s *Server)ServerStart(mode string){
 	HOST := conf.EnvVar("HOST")
@@ -48,10 +48,8 @@ func (s *Server)ServerStart(mode string){
 	fmt.Println(h.I, "Session will begin when client connects")
 	fmt.Println(h.Line)
 	
-	//*GO ROUTINE TO CHECK IF ANY CLIENTS HAVE DISCONNECTED
 	go s.ClientStatus()
 	
-	//*ITER LOOP OF SERVER
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
@@ -81,12 +79,14 @@ func (s *Server)ServerStart(mode string){
 }
 
 /*
-*Monitor and logs clients
+* Monitor and logs clients
 */
 func (s *Server) handleConnection(conn net.Conn, client *Client) {
 	defer client.Conn.Close()
 	
 	s.Activeconns++
+
+	conn.Write([]byte(" ID "+ strconv.FormatInt(client.ID, 10)))
 
 	defer func() {
 		s.Activeconns--
@@ -95,19 +95,33 @@ func (s *Server) handleConnection(conn net.Conn, client *Client) {
 
 	for {
 		
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 2048)
 		n, err := client.Conn.Read(buffer)
 		
 		if err != nil {
-			fmt.Println(h.E, "Client Disconnected", err)
+			fmt.Println(h.E, "Client", client.ID,"Disconnected", err)
 			break
 		}
 
 		contents := strings.TrimSpace(string(buffer[:n]))
-		fmt.Println(h.I, "Client says:", contents)
-		// HandleClient(s, contents, conn)	
-		s.HandleClientDisconnection(client)
+		parts := strings.Fields(contents)
 		
+		switch parts[0]{
+		
+		case "DOWNLOADINFO":
+			if size, err := strconv.ParseInt(parts[1], 10, 64); err != nil{
+				fmt.Println(h.E, "Error converting size", err)
+				return
+			}else{
+				name := parts[2]
+				s.DownloadFileFromClient(size, name, client)
+			}
+
+		default:
+			fmt.Println(h.I, "Client", client.ID, "response:", contents)
+		}
+
+		s.HandleClientDisconnection(client)
 	}
 }
 

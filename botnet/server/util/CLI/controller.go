@@ -31,20 +31,19 @@ func CLI(){
 	}
 	
 	app.Commands = []cli.Command{
-		
-		{
-			Name:  "start",
-			Usage: "Starting Server",
-			Flags: start_flags,
-			Action: func(c *cli.Context) error {
-				if c.Bool("i"){
-					session.ServerStart("i")
-				}else{
-					session.ServerStart("")
-				}
-				return nil
+			{
+				Name:  "start",
+				Usage: "Starting Server",
+				Flags: start_flags,
+				Action: func(c *cli.Context) error {
+					if c.Bool("i"){
+						session.ServerStart("i")
+					}else{
+						session.ServerStart("")
+					}
+					return nil
+				},
 			},
-		},
 	}
 
 	if err := app.Run(os.Args); err != nil{

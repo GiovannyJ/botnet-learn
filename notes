@@ -1,7 +1,2 @@
 Test Server command:
 - Test-NetConnection -ComputerName localhost -Port 2106
-
-
-Problem:
--when client connects and disconnects they are kept on record >> need to keep better track
--need to make way to interact with only specified client

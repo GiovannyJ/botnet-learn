@@ -4,16 +4,18 @@ TODO: server side
   - CHECK Multi Select Connection Mode
   - CHECK Send File
   -Recv File
+  - CHECK metadata of client 
 
 -TODO: Client Side
-  -Connect to Server
-  -Process Command
-  -Send Result
-  -Self Destruct
+  - CHECK Connect to Server
+  - CHECK Process Command
+  - CHECK Send Result
+  - CHECK Self Destruct
   -Encrypted mode
-  -Send File
-  -Recv File
-  -Search File
+  - CHECK Send File
+  - CHECK Recv File
+  - CHECK Run File
+  - CHECK Search File
 
 -TODO: Util
   -Encryption

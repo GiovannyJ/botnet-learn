@@ -7,10 +7,12 @@ import (
 	h "server/util/header"
 	"strconv"
 	"strings"
-	// "time"
 )
 
-
+/*
+*Command Router:
+uses session *Server pointer methods based on parsed input commands passes conn for reference
+*/
 func handleServer(session *Server, input string, conn net.Conn) {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
@@ -22,6 +24,8 @@ func handleServer(session *Server, input string, conn net.Conn) {
 
 	switch command {
 	case "help":
+		h.ListHelp()
+	case "h":
 		h.ListHelp()
 
 	case "count":
@@ -76,7 +80,10 @@ func handleServer(session *Server, input string, conn net.Conn) {
 
 	case "ping":
 		addr := ""
-		if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
+		if len(parts) < 2{
+			fmt.Println(h.E, "Invalid Ping command")
+			return
+		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			addr = parts[2]
 			session.ClientPing(addr, parts[1], conn)
 		} else if len(parts) == 2 {
@@ -146,10 +153,34 @@ func handleServer(session *Server, input string, conn net.Conn) {
 		if len(parts) > 1 {
 			if parts[1] == "-g" ||  parts[1] == "-a"{
 				session.ClientEntryPoint(parts[1], conn)
-			}else {
+			}else{
 			fmt.Println(h.E, "Invalid entry command")
+			}
+		}else{
+			session.ClientEntryPoint("",conn)
 		}
-	}
+
+	case "blowup":
+		if len(parts) > 1 {
+			if parts[1] == "-g" ||  parts[1] == "-a"{
+				session.ClientSelfDestruct(parts[1], conn)
+			}else{
+			fmt.Println(h.E, "Invalid entry command")
+			}
+		}else{
+			session.ClientSelfDestruct("",conn)
+		}
+
+	case "metadata":
+		if len(parts) > 1 {
+			if parts[1] == "-g" ||  parts[1] == "-a"{
+				session.GetMetaData(parts[1], conn)
+			}else{
+			fmt.Println(h.E, "Invalid metadata command")
+			}
+		}else{
+			session.GetMetaData("",conn)
+		}
 
 	case "exit":
 		fmt.Println(h.I, "goodbye!")

@@ -18,9 +18,11 @@ func NewUniqueIDGenerator() *UniqueIDGenerator {
 func (g *UniqueIDGenerator) NextID() int64 {
 	return atomic.AddInt64(&g.counter, 1)
 }
+
 //*================================ END ID GENERATOR===============================
 
 //*================================ Randomize list===============================
+//shuffle a list
 func ShuffleList(list []*Client){
 	rand.Seed(time.Now().UnixNano())
 
@@ -30,16 +32,3 @@ func ShuffleList(list []*Client){
 	}
 }
 //*================================ END Randomize List===============================
-
-//*================================ Text Animation===============================
-func FillString(retunString string, toLength int) string {
-	for {
-		lengtString := len(retunString)
-		if lengtString < toLength {
-			retunString = retunString + ":"
-			continue
-		}
-		break
-	}
-	return retunString
-}

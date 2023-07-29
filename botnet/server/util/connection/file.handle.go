@@ -3,96 +3,71 @@ package connection
 import (
 	"fmt"
 	"io"
-	// "net"
+	"path"
 	"os"
-	"strconv"
-	"strings"
 	h "server/util/header"
 )
 
-const BUFFERSIZE = 1024
-
 //*Send File to client
-// func (s *Server) SendFile(file string, client *Client) (bool, error){
-// 	defer client.Conn.Close()
-// 	f, err := os.OpenFile(file, 0, O_)
-	
-// 	return false, net.ErrClosed
-// }
-
-func (s *Server) SendFileToClient(f string, client *Client) error{
+func (s *Server) SendFileToClient(f string, client *Client) error {
 	file, err := os.Open(f)
-	if err != nil {
-		return err
-	}
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return err
-	}
-
-	fileSize := FillString(strconv.FormatInt(fileInfo.Size(), 10), 10)
-	fileName := FillString(fileInfo.Name(), 64)
-	fmt.Println(h.I, "Sending filename and filesize")
 	
-	client.Conn.Write([]byte(fileSize))
-	client.Conn.Write([]byte(fileName))
-
-	sendBuffer := make([]byte, BUFFERSIZE)
-
-	fmt.Println(h.I, "Sending File to: ", client.ID)
-	for {
-		_, err = file.Read(sendBuffer)
-		if err == io.EOF {
-			break
-		}
-		client.Conn.Write(sendBuffer)
+	if err != nil {
+		return err
 	}
 
-	fmt.Println(h.K, "File has been sent to:", client.ID)
+	defer file.Close()
+
+	fmt.Println(h.I, "Sending File to client:", client.ID)
+
+	fileInfo, err := os.Stat(file.Name())
+	if err != nil {
+		return err
+	}
+
+	command := fmt.Sprintf("send %s %d", file.Name(), fileInfo.Size())
+	
+	
+	if _, err := client.Conn.Write([]byte(command)); err != nil {
+		fmt.Println(h.E, "Error sending command")
+		return err
+	}
+	if _, err = io.CopyN(client.Conn, file, fileInfo.Size()); err != nil{
+		fmt.Println(h.E, "Error copying file")
+		return err
+	}
+
 	return nil
 }
 
-
-
-
-
-
-
-func (s *Server) RecvFileFromClient(client *Client) error{
-	// connection, err := net.Dial("tcp", "localhost:27001")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer connection.Close()
-	// fmt.Println("Connected to server, start receiving the file name and file size")
-	bufferFileName := make([]byte, 64)
-	bufferFileSize := make([]byte, 10)
+//*Sends command to prep download of file from client
+func (s *Server) RecvFileFromClient(client *Client, f string) error {
+	command := fmt.Sprintf("download %s", f)
 	
-	client.Conn.Read(bufferFileSize)
-	fileSize, _ := strconv.ParseInt(strings.Trim(string(bufferFileSize), ":"), 10, 64)
+	if _, err := client.Conn.Write([]byte(command)); err != nil{
+		fmt.Println(h.E, "Error sending command")
+		return err		
+	}
+
+	return nil
+}
+
+//*Downloads a file from the client
+func (s *Server) DownloadFileFromClient(size int64, name string, c *Client) error{
 	
-	client.Conn.Read(bufferFileName)
-	fileName := strings.Trim(string(bufferFileName), ":")
-	
-	newFile, err := os.Create(fileName)
-	
-	if err != nil {
-		// panic(err)
+	file, err := os.Create(path.Base(name))
+	if err != nil{
+		fmt.Println(h.E, "Error creating file locally")
 		return err
 	}
-	defer newFile.Close()
-	var receivedBytes int64
-	
-	for {
-		if (fileSize - receivedBytes) < BUFFERSIZE {
-			io.CopyN(newFile, client.Conn, (fileSize - receivedBytes))
-			client.Conn.Read(make([]byte, (receivedBytes+BUFFERSIZE)-fileSize))
-			break
-		}
-		io.CopyN(newFile, client.Conn, BUFFERSIZE)
-		receivedBytes += BUFFERSIZE
+	defer file.Close()
+
+
+	if _, err := io.CopyN(file, c.Conn, size); err != nil{
+		fmt.Println(h.E, "Error copying file")
+		return err
 	}
-	fmt.Println(h.K, "Received file completely!")
+
+	fmt.Println(h.K, "File downloaded")
 	return nil
 }
