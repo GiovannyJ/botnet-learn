@@ -1,2 +1,0 @@
-Test Server command:
-- Test-NetConnection -ComputerName localhost -Port 2106

@@ -1,0 +1,27 @@
+TODO: server side
+  - CHECK Active Connection Check
+  - CHECK Single Select Connection Mode
+  - CHECK Multi Select Connection Mode
+  - CHECK Send File
+  - CHECK Recv File
+  - CHECK metadata of client 
+
+-TODO: Client Side
+  - CHECK Connect to Server
+  - CHECK Process Command
+  - CHECK Send Result
+  - CHECK Self Destruct
+  -Encrypted mode
+  - CHECK Send File
+  - CHECK Recv File
+  - CHECK Run File
+  - CHECK Search File
+
+-TODO: Util
+  -Encryption
+  -Malware
+  -File Parse
+
+-TODO: Lab
+  -test if work
+  -test if connection to localhost works

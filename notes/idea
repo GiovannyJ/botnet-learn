@@ -1,0 +1,35 @@
+- Steps:
+  1. set up network using vagrant (set up multiple vm at the same time)
+    1.2. test that connections can be made from local to vm network
+  2. set up botnet with specified capabilities
+  3. run botnet on local to vm network
+
+- Server:
+  - hosts TCP connection on port
+  - sends commands -> need some type of CLI that has preset commands
+    - show connections
+    - send data
+    - receive data
+    - specified/all clients
+- Client:
+  - connects to TCP connection and port
+  - receives commands and parses to run predefined functions
+  - needs some type of env parser to run dependent on environment of where it is being run
+
+- Goals:
+  1. Open application
+    1.2. Open application on 1,2,3,4 separately
+  2. DDOS local website
+  3. Reverse shell into network
+  4. Start a DLL source file injection
+
+- Computers:
+  1. Router (192.168.72.1)
+  2. Windows PC 1 (192.168.72.2)
+  3. Windows PC 2 (192.168.72.46)
+  4. Linux PC 1 (192.168.72.28)
+  5. Linux PC 2 (192.168.72.39)
+
+- Botnet Info:
+  -capabilities
+  -execution
