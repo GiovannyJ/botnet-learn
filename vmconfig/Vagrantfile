@@ -1,35 +1,85 @@
 Vagrant.configure("2") do |config|
     # Define the Windows VMs
     config.vm.define "windows1" do |windows1|
-        windows1.vm.box = "generic/windows"
+        windows1.vm.box = "gusztavvargadr/windows-10"
+        windows1.vm.box_version = "2202.0.2302"
         windows1.vm.hostname = "windows1"
+        windows1.vm.provider "virtualbox" do |vb|
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        windows1.vm.communicator = "winrm"
         windows1.vm.network "private_network", ip: "192.168.72.2"
-        windows1.vm.provision "file", source: "client.exe", destination: "C:/client.exe"
-        windows1.vm.provision "shell", inline: "Start-Process -FilePath 'C:/client.exe'"
+        # Install the WinRM plugin
+        config.vm.provision "shell", inline: "vagrant plugin install winrm"
+        windows1.vm.provision "file", source: "./../client.exe", destination: "C:/Users/vagrant/Desktop/client.exe"
+        windows1.vm.provision "file", source: "./../.env", destination: "C:/Users/vagrant/Desktop/.env"
+        # Configure the WinRM user and password
+        windows1.vm.provision "shell", inline: "winrm set winrm/config/service @{AllowUnencrypted=\"true\"}"
+        windows1.vm.provision "shell", inline: "winrm set winrm/config/winrs @{MaxMemoryPerShellMB=\"512\"}"
+        windows1.vm.provision "shell", inline: "winrm set winrm/config @{MaxTimeoutms=\"1800000\"}"
+        windows1.vm.provision "shell", inline: "winrm set winrm/config/service @{AllowUnencrypted=\"true\"}"
+        windows1.vm.provision "shell", inline: "winrm set winrm/config/service/auth @{Basic=\"true\"}"
+        windows1.vm.provision "shell", inline: "winrm create winrm/config/listener?Address=*+Transport=HTTP"
+        windows1.vm.provision "shell", inline: "winrm set winrm/config/winrs @{MaxMemoryPerShellMB=\"512\"}"
+        # Provision files and start client.exe
     end
-  
+
     config.vm.define "windows2" do |windows2|
-        windows2.vm.box = "generic/windows"
+        windows2.vm.box = "gusztavvargadr/windows-10"
+        windows2.vm.box_version = "2202.0.2302"
         windows2.vm.hostname = "windows2"
+        windows2.vm.provider "virtualbox" do |vb|
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        windows2.vm.communicator = "winrm"
         windows2.vm.network "private_network", ip: "192.168.72.46"
-        windows2.vm.provision "file", source: "client.exe", destination: "C:/client.exe"
-        windows2.vm.provision "shell", inline: "Start-Process -FilePath 'C:/client.exe'"
+        # Install the WinRM plugin
+        config.vm.provision "shell", inline: "vagrant plugin install winrm"
+        # Configure the WinRM user and password
+        windows2.vm.provision "file", source: "./../client.exe", destination: "C:/Users/vagrant/Desktop/client.exe"
+        windows2.vm.provision "file", source: "./../.env", destination: "C:/Users/vagrant/Desktop/.env"
+        windows2.vm.provision "shell", inline: "winrm set winrm/config/service @{AllowUnencrypted=\"true\"}"
+        windows2.vm.provision "shell", inline: "winrm set winrm/config/winrs @{MaxMemoryPerShellMB=\"512\"}"
+        windows2.vm.provision "shell", inline: "winrm set winrm/config @{MaxTimeoutms=\"1800000\"}"
+        windows2.vm.provision "shell", inline: "winrm set winrm/config/service @{AllowUnencrypted=\"true\"}"
+        windows2.vm.provision "shell", inline: "winrm set winrm/config/service/auth @{Basic=\"true\"}"
+        windows2.vm.provision "shell", inline: "winrm create winrm/config/listener?Address=*+Transport=HTTP"
+        windows2.vm.provision "shell", inline: "winrm set winrm/config/winrs @{MaxMemoryPerShellMB=\"512\"}"
+        # Provision files and start client.exe
     end
+
     # Define the Linux VMs
     config.vm.define "linux1" do |linux1|
-        linux1.vm.box = "generic/ubuntu1804"
+        linux1.vm.box = "ubuntu/bionic64"
         linux1.vm.hostname = "linux1"
         linux1.vm.network "private_network", ip: "192.168.72.28"
-        linux1.vm.provision "file", source: "client.exe", destination: "/home/vagrant/client.exe"
-        linux1.vm.provision "shell", inline: "chmod +x /home/vagrant/client.exe && /home/vagrant/client.exe &"
+        linux1.vm.provider "virtualbox" do |vb|
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        linux1.vm.provision "file", source: "../client", destination: "/home/vagrant/client"
+        linux1.vm.provision "file", source: "../.env", destination: "/home/vagrant/.env"
+        linux1.vm.provision "shell", inline: "chmod +x /home/vagrant/client"
+        # linux1.vm.provision "shell", inline: "sudo apt-get update"
+        # linux1.vm.provision "shell", inline: "sudo apt-get install -y ubuntu-desktop"
+        # linux1.vm.provision "shell", inline: "DISPLAY=:0.0 startx &"
     end
 
     config.vm.define "linux2" do |linux2|
-        linux2.vm.box = "generic/ubuntu1804"
+        linux2.vm.box = "ubuntu/bionic64"
         linux2.vm.hostname = "linux2"
         linux2.vm.network "private_network", ip: "192.168.72.39"
-        linux2.vm.provision "file", source: "client.exe", destination: "/home/vagrant/client.exe"
-        linux2.vm.provision "shell", inline: "chmod +x /home/vagrant/client.exe && /home/vagrant/client.exe &"
+        linux2.vm.provider "virtualbox" do |vb|
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        linux2.vm.provision "file", source: "../client", destination: "/home/vagrant/client"
+        linux2.vm.provision "file", source: "../.env", destination: "/home/vagrant/.env"
+        linux2.vm.provision "shell", inline: "chmod +x /home/vagrant/client"
+        # linux2.vm.provision "shell", inline: "sudo apt-get update"
+        # linux2.vm.provision "shell", inline: "sudo apt-get install -y ubuntu-desktop"
+        # linux2.vm.provision "shell", inline: "DISPLAY=:0.0 startx &"
     end
-  end
-  
+end
