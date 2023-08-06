@@ -6,10 +6,10 @@ import (
 )
 
 type Server struct {
-	Activeconns         int
+	ActiveConns         int
 	Clients             []*Client 
 	ActiveClient        int64     // 0 = none & # = id selected currently
-	ClientGroup         []int64
+	ClientGroup         []*Client
 	DisconnectedClients chan *Client 
 	mu                  sync.Mutex // Mutex to manage concurrent access to s.Clients
 }

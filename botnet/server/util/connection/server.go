@@ -46,6 +46,7 @@ func (s *Server)ServerStart(mode string){
 
 	fmt.Println(h.K,"Server started")
 	fmt.Println(h.I, "Session will begin when client connects")
+	fmt.Println(h.X, "NOTE: Clients connected have a 5 min inactive timer after then they will close")
 	fmt.Println(h.Line)
 	
 	go s.ClientStatus()
@@ -84,12 +85,12 @@ func (s *Server)ServerStart(mode string){
 func (s *Server) handleConnection(conn net.Conn, client *Client) {
 	defer client.Conn.Close()
 	
-	s.Activeconns++
+	s.ActiveConns++
 
 	conn.Write([]byte(" ID "+ strconv.FormatInt(client.ID, 10)))
 
 	defer func() {
-		s.Activeconns--
+		s.ActiveConns--
 		s.DisconnectedClients <- client
 	}()
 

@@ -1,0 +1,6 @@
+1. DONE (linux) when ping command received gets stuck
+2. DONE -a and -g are not working
+3. DONE abs file location not working
+4. DONE add timer to client so after x min they close themselves if no commands are recieved
+5. DONE add status update -> command to just check in on client (echo -> hi from client #)
+6. add reverse shell mode (must be attached to 1 client only)

@@ -1,15 +1,18 @@
 package connection
 
 import (
+	h "client/util/header"
+	"fmt"
 	"net"
 	"runtime"
 	"strconv"
-	"fmt"
-	h "client/util/header"
 )
 
 func NewClient() *Client {
-	return &Client{}
+	return &Client{
+		Status: make(chan bool),
+		Pause: make(chan bool),
+	}
 }
 
 //*Sets the OS property to the runtime OS of the  client

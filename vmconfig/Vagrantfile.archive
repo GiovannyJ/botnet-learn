@@ -1,0 +1,104 @@
+Vagrant.configure("2") do |config|
+    # Define the Windows VMs
+    # config.vm.define "windows1VM" do |windows1|
+    #     windows1.vm.box = "gusztavvargadr/windows-10"
+    #     windows1.vm.box_version = "2202.0.2302"
+    #     windows1.vm.hostname = "windows1"
+    #     windows1.vm.provider "virtualbox" do |vb|
+    #         vb.gui = true
+    #         vb.memory = "8192"
+    #     end
+    #     windows1.vm.communicator = "winrm"
+    #     windows1.vm.guest = :windows
+    #     windows1.vm.boot_timeout = 600
+    
+    #     # Explicitly set the WinRM username and password
+    #     windows1.winrm.transport = :plaintext
+    #     windows1.winrm.username = "vagrant"
+    #     windows1.winrm.password = "vagrant"
+    #     windows1.vm.network "private_network", ip: "192.168.72.2"
+    # end
+    config.vm.define "windows1VM" do |w1|
+        w1.vm.box = "gusztavvargadr/windows-10"
+        w1.vm.box_version = "2202.0.2302"
+        w1.vm.hostname = "windows1VM"
+        w1.vm.guest = :windows
+        w1.vm.network "private_network", ip: "192.168.72.2"
+        w1.vm.provider "virtualbox" do |vb|
+            vb.name = "windows1VM"
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        w1.vm.communicator = "winrm"
+        w1.vm.boot_timeout = 600
+        w1.vm.graceful_halt_timeout = 600
+        w1.vm.network :forwarded_port, guest: 3389, host: 3389
+        w1.vm.network :forwarded_port, guest: 5985, host: 5985, id: "winrm", auto_correct: true
+    end
+        
+  
+    # config.vm.define "windows2VM" do |windows2|
+    #     windows2.vm.box = "gusztavvargadr/windows-10"
+    #     windows2.vm.box_version = "2202.0.2302"
+    #     windows2.vm.hostname = "windows2"
+    #     windows2.vm.provider "virtualbox" do |vb|
+    #         vb.gui = true
+    #         vb.memory = "8192"
+    #     end
+    #     windows2.vm.communicator = "winrm"
+    #     windows2.vm.guest = :windows
+    #     windows2.vm.boot_timeout = 600
+
+    #     # Explicitly set the WinRM username and password
+    #     windows2.winrm.username = "vagrant"
+    #     windows2.winrm.password = "vagrant"
+    #     windows2.vm.network "private_network", ip: "192.168.72.46"
+    # end
+    config.vm.define "windows2VM" do |w2|
+        w2.vm.box = "gusztavvargadr/windows-10"
+        w2.vm.box_version = "2202.0.2302"
+        w2.vm.hostname = "windows2VM"
+        w2.vm.guest = :windows
+        w2.vm.network "private_network", ip: "192.168.72.46"
+        w2.vm.network "forwarded_port", guest: 3389, host: 3389
+        w2.vm.provider "virtualbox" do |vb|
+            vb.name = "windows2VM"
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        w2.vm.communicator = "winrm"
+        w2.vm.boot_timeout = 600
+        w2.vm.graceful_halt_timeout = 600
+        w2.vm.network :forwarded_port, guest: 3389, host: 3389
+        w2.vm.network :forwarded_port, guest: 5985, host: 5985, id: "winrm", auto_correct: true
+    end
+  
+    config.vm.define "linux1VM" do |l1|
+        l1.vm.box = "ubuntu/bionic64"
+        l1.vm.hostname = "linux1VM"
+        l1.vm.network "private_network", ip: "192.168.72.28"
+        l1.vm.provider "virtualbox" do |vb|
+            vb.name = "linux1VM"
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        l1.vm.provision "shell", inline: "sudo apt-get update"
+        l1.vm.provision "shell", inline: "sudo apt-get install -y ubuntu-desktop"
+        l1.vm.provision "shell", inline: "DISPLAY=:0.0 startx &"
+      end
+    
+      config.vm.define "linux2VM" do |l2|
+        l2.vm.box = "ubuntu/bionic64"
+        l2.vm.hostname = "linux2VM"
+        l2.vm.network "private_network", ip: "192.168.72.39"
+        l2.vm.provider "virtualbox" do |vb|
+            vb.name = "linux2VM"
+            vb.gui = true
+            vb.memory = "8192"
+        end
+        l2.vm.provision "shell", inline: "sudo apt-get update"
+        l2.vm.provision "shell", inline: "sudo apt-get install -y ubuntu-desktop"
+        l2.vm.provision "shell", inline: "DISPLAY=:0.0 startx &"
+    end
+end
+  

@@ -10,6 +10,8 @@ type Client struct {
 	Conn net.Conn
 	OS string
 	Mu sync.Mutex
+	Status chan bool
+	Pause chan bool
 }
 
 type Command struct{

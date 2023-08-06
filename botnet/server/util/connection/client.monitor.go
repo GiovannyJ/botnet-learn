@@ -21,6 +21,11 @@ func (s *Server) ClientStatus() {
 		if disconnectedClient.ID == s.ActiveClient{
 			s.resetActive(disconnectedClient.ID)
 		}
+		for _, discClient := range s.ClientGroup{
+			if disconnectedClient.ID == discClient.ID{
+				s.removeClientGroupByID(disconnectedClient.ID)
+			}
+		}
 	}
 }
 
@@ -56,6 +61,25 @@ func (s *Server) removeClientByID(clientID int64) {
 
 	s.Clients = updatedClients
 }
+
+//* removes client from active group
+func (s *Server) removeClientGroupByID(clientID int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	var updatedClients []*Client
+
+	for _, client := range s.ClientGroup {
+		if client.ID != clientID {
+			updatedClients = append(updatedClients, client)
+		}
+	}
+
+	s.ClientGroup = updatedClients
+	fmt.Println(h.I, "Client:", clientID, "has been removed from the group (disconnected)")
+}
+
+
 
 //* Go Routine to update channel when client disconnects
 func (s *Server) HandleClientDisconnection(client *Client) {
