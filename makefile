@@ -46,7 +46,17 @@ deploy: build
 	cd vmconfig && vagrant scp ../.env linux2VM:/home/vagrant
 	@echo [+] done...
 
+vm_space_stop:
+	@echo [+] closing all vms and saving state
+	VBoxManage controlvm windows1VM savestate
+	VBoxManage controlvm windows2VM savestate
+	VBoxManage controlvm linux1VM savestate
+	VBoxManage controlvm linux2VM savestate
+	@echo [+] done
+
+
 help:
 	@echo [+] deploy :: build and deploy client and .env to vmspace
 	@echo [+] vm_space :: start all the VM
+	@echo [+] vm_space_stop :: stops all the vms and saves their state
 	@echo [+] build :: compile the server and client to executables
